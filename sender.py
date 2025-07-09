@@ -2,10 +2,23 @@ import os
 import time
 import random
 
+# image sender for server.py testing
+
 FIFO = "image_pipe"
 IMAGE_FOLDER = "images"
 
+
+def ensure_fifo(path):
+    if not os.path.exists(path):
+        try:
+            os.mkfifo(path)
+            print(f"Pipe created: {path}")
+        except FileExistsError:
+            pass
+
+
 def send_images():
+    ensure_fifo(FIFO)
     while True:
         try:
             with open(FIFO, "wb") as pipe:
@@ -21,6 +34,8 @@ def send_images():
                                 time.sleep(random.randint(1, 5))
         except Exception as e:
             print(e)
+            time.sleep(1)
+
 
 if __name__ == "__main__":
     send_images()
