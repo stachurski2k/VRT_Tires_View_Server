@@ -1,4 +1,4 @@
-from flask import Flask, Response, send_file
+from flask import Flask, Response, send_file, request
 import threading
 import struct
 import time
@@ -66,7 +66,7 @@ def event_stream():
             current = latest_image
         if current is not None and current != last_sent:
             last_sent = current
-            yield f"new image available\n\n"
+            yield f"data: new image available\n\n"
 
 
 @app.route("/image")
@@ -89,7 +89,21 @@ def update():
 
 @app.route("/tire-settings", methods=["POST"])
 def tire_settings():
-    return "ok", 200
+    try:
+        if not os.path.exists(pipe_tire_settings_path):
+            return "Pipe doesn't exists", 500
+
+        data = request.get_data(as_text=True)
+        if len(data) > 200:
+            return "Request too long (max 200 characters)", 400
+
+        with open(pipe_tire_settings_path, "w") as pipe:
+            pipe.write(data)
+        return "ok", 200
+
+    except Exception as e:
+        print(f"Error in tire-settings: {e}")
+        return "Internal server error", 500
 
 
 if __name__ == "__main__":
