@@ -13,7 +13,7 @@ server_host = config["server"]["host"]
 server_port = config["server"]["port"]
 pipe_image_path = config["pipe"]["image"]["path"]
 pipe_tire_settings_path = config["pipe"]["tire-settings"]["path"]
-
+import os
 
 app = Flask(__name__)
 
@@ -36,6 +36,9 @@ def read_image_pipe():
     global latest_image
     while True:
         try:
+            if not os.path.exists(pipe_image_path):
+                time.sleep(0.5)
+                continue
             with open(pipe_image_path, "rb") as pipe:
                 while True:
                     size_bytes = read_pipe_bytes(pipe, 4)
